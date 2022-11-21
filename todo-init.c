@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#define ISWIN == 0
+#define ISWIN 0
 #if ISWIN == 0
 	#include <sys/stat.h>
 #elif ISWIN == 1
