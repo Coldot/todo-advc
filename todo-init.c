@@ -13,7 +13,7 @@
 int createDir(char *name) {
 	int result;
 	#if ISWIN == 0
-		result = mkdir(name, 775);
+		result = mkdir(name, 755);
 	#elif ISWIN == 1
 		result = mkdir(name);
 	#endif
