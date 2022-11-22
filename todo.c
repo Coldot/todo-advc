@@ -2,6 +2,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define ISWIN == 0
+#if ISWIN == 0
+	#include <sys/stat.h>
+#elif ISWIN == 1
+	#include <direct.h>
+#endif
+
+
+#define DIRNAME "./data"
+
 #define MAX_INPUT 1000
 #define MAX_NAME 90                         // 한글 기준 최대 30자
 #define MAX_LINE 10+2+5+3+3+1+MAX_NAME+10   // = 124
@@ -35,6 +45,18 @@ typedef struct _todo {
     // char priority;          // 우선 순위 (0~3, 0:미지정, 1:1순위, 2:2순위, 3:3순위) _ 추후 구현
     
 } TODO;
+
+
+/****** 폴더 관련 함수 ******/
+// 폴더 생성 함수
+int createDir(char *name) {
+	int result;
+	#if ISWIN == 0
+		result = mkdir(name, 775);
+	#elif ISWIN == 1
+		result = mkdir(name);
+	#endif
+}
 
 
 /****** 데이터 파싱 함수 ******/
@@ -223,17 +245,31 @@ void menu_removeTodo() {
 }
 
 
+// 메뉴 11. 초기 설정
+// 프로그램이 정상 작동하려면 data 폴더가 존재하여야 하므로, 최초 실행 시 1회 실행 필요
+void menu_initDataDir() {
+	if (createDir(DIRNAME) == 0) {
+		printf("초기 설정 완료\n");
+	}
+	else {
+		printf("초기 설정 실패\n");
+	}
+}
+
+
 /****** main ******/
 int main() {
     int cmd = 0;
 
     while (1) {
         printf("\n\n");
-        printf("============\n");
+			printf("============\n");
         printf("0. 종료\n");
         printf("------------\n");
         printf("1. TODO 추가\n");
         printf("2. TODO 삭제\n");
+			printf("============\n");
+			printf("11. 초기 설정 (최초 1회 실행 필요)");
         printf("============\n");
         printf("> ");
         scanf("%d", &cmd);
@@ -255,6 +291,11 @@ int main() {
             case 2:
                 menu_removeTodo();
                 break;
+
+				// 11. 초기 설정
+				case 11:
+					menu_initDataDir();
+					break;
             
             default:
                 printf("존재하지 않는 메뉴입니다.\n");
