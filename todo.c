@@ -266,13 +266,13 @@ int main() {
 
     while (1) {
         printf("\n\n");
-			printf("============\n");
+	printf("============\n");
         printf("0. 종료\n");
         printf("------------\n");
         printf("1. TODO 추가\n");
         printf("2. TODO 삭제\n");
-			printf("============\n");
-			printf("11. 초기 설정 (최초 1회 실행 필요)");
+	printf("============\n");
+	printf("11. 초기 설정 (최초 1회 실행 필요)");
         printf("============\n");
         printf("> ");
         scanf("%d", &cmd);
@@ -295,10 +295,10 @@ int main() {
                 menu_removeTodo();
                 break;
 
-				// 11. 초기 설정
-				case 11:
-					menu_initDataDir();
-					break;
+	    // 11. 초기 설정
+	    case 11:
+		menu_initDataDir();
+		break;
             
             default:
                 printf("존재하지 않는 메뉴입니다.\n");
