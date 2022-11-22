@@ -59,6 +59,7 @@ int createDir(char *name) {
 	#elif ISWIN == 1
 		result = mkdir(name);
 	#endif
+	return result;
 }
 
 
