@@ -68,7 +68,7 @@ DATE parseDate(char *rawString) {
 
     strcpy(raw, rawString);
 
-    p = strtok(rawString, "-");
+    p = strtok(raw, "-");
     date.year = atoi(p);
 
     p = strtok(NULL, "-");
@@ -90,7 +90,7 @@ TODO parseTodo(char *rawString) {
 
     strcpy(raw, rawString);
 
-    p = strtok(rawString, ":");
+    p = strtok(raw, ":");
     todo.id = atoi(p);
 
     p = strtok(NULL, ":");
@@ -127,6 +127,7 @@ int parseId(char *rawString) {
     return id;
 }
 
+// TODO -> String(char *)
 char *getTodoString(TODO todo, char *dest) {
     char todoString[MAX_LINE];
 
@@ -201,13 +202,47 @@ void removeTodo(int targetId) {
     FILE *fp = fopen(PATH_TODO, "r");
     FILE *fp_temp = fopen(PATH_TODO_TEMP, "w");
 
-    while (fgets(raw_line, MAX_LINE, fp) != NULL)
-    {
+    while (fgets(raw_line, MAX_LINE, fp) != NULL) {
         currId = parseId(raw_line);
 
         // 삭제 대상의 line은 건너띄고 새로운 파일에 기록
         if (currId == targetId)
             continue;
+
+        fputs(raw_line, fp_temp);
+    }
+
+    fclose(fp);
+    fclose(fp_temp);
+
+    remove(PATH_TODO);
+    rename(PATH_TODO_TEMP, PATH_TODO);
+}
+
+// 기존 TODO 이름 변경
+void renameTodo(int targetId) {
+    printf("수정 할 문장을 입력해주세요 : ");
+    char raw_line[MAX_LINE];
+    int currId;
+    char sen[MAX_NAME] = "";
+    scanf("%s", sen);
+    printf("\n");
+
+    FILE *fp = fopen(PATH_TODO, "r");
+    FILE *fp_temp = fopen(PATH_TODO_TEMP, "w");
+
+    while (fgets(raw_line, MAX_LINE, fp) != NULL) {
+        currId = parseId(raw_line);
+        TODO todo = parseTodo(raw_line);
+
+        // 삭제 대상의 line은 건너띄고 새로운 파일에 기록
+        if (currId == targetId) {
+            printf("TODO 이름: ");
+            scanf("%[^\n]s", sen);
+            getchar();
+            strcpy(todo.name, sen);
+            getTodoString(todo, raw_line);
+        }
 
         fputs(raw_line, fp_temp);
     }
@@ -262,6 +297,16 @@ void menu_removeTodo() {
     return;
 }
 
+// 메뉴 3. TODO 수정
+void menu_renameTodo() {
+    int targetId;
+
+    printf("수정할 todo의 id를 입력하세요: ");
+    scanf("%d", &targetId);
+
+    renameTodo(targetId);
+}
+
 // 메뉴 11. 초기 설정
 // 프로그램이 정상 작동하려면 data 폴더가 존재하여야 하므로, 최초 실행 시 1회 실행 필요
 void menu_initDataDir() {
@@ -284,6 +329,7 @@ int main() {
         printf("------------\n");
         printf("1. TODO 추가\n");
         printf("2. TODO 삭제\n");
+        printf("3. TODO 수정\n");
         printf("============\n");
         printf("11. 초기 설정 (최초 1회 실행 필요)\n");
         printf("============\n");
@@ -306,6 +352,11 @@ int main() {
         // 2. TODO 삭제
         case 2:
             menu_removeTodo();
+            break;
+
+        // 3. TODO 수정
+        case 3:
+            menu_renameTodo();
             break;
 
         // 11. 초기 설정
