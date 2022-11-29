@@ -86,7 +86,7 @@ DATE parseDate(char *rawString) {
 // String(char *) -> TODO
 // "1:0:2022:12:16:고급C 최종 보고서 제출" 형식으로 들어오는 rawString을 ':' 문자를 기준으로 잘라 TODO 구조체에 담아 변환
 TODO parseTodo(char *rawString) {
-    char *raw;
+    char raw[MAX_LINE];
     char *p = NULL;
     TODO todo = {};
 
@@ -117,7 +117,7 @@ TODO parseTodo(char *rawString) {
 // String(char *) -> int
 // "1:0:2022:12:16:고급C 최종 보고서 제출" 형식으로 오는 데이터에서 id값(예제에서는 1)만 파싱하여 반환
 int parseId(char *rawString) {
-    char *raw;
+    char raw[MAX_LINE];
     char *p;
     int id;
 
@@ -279,7 +279,7 @@ int main() {
         printf("1. TODO 추가\n");
         printf("2. TODO 삭제\n");
 	    printf("============\n");
-	    printf("11. 초기 설정 (최초 1회 실행 필요)");
+	    printf("11. 초기 설정 (최초 1회 실행 필요)\n");
         printf("============\n");
         printf("> ");
         scanf("%d", &cmd);
