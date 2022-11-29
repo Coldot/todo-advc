@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define ISWIN 0
+#define ISWIN 1
 #if ISWIN == 0
     #include <sys/stat.h>
 #elif ISWIN == 1
