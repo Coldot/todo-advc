@@ -1,32 +1,29 @@
-#pragma warning (disable: 4996)
+#pragma warning(disable : 4996)
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define ISWIN 1
+#define ISWIN 0
 #if ISWIN == 0
-	#include <sys/stat.h>
+    #include <sys/stat.h>
 #elif ISWIN == 1
-	#include <direct.h>
+    #include <direct.h>
 #endif
-
 
 #define DIRNAME "./data"
 
 #define MAX_INPUT 1000
-#define MAX_NAME 90                         // 한글 기준 최대 30자
-#define MAX_LINE 10+2+5+3+3+1+MAX_NAME+10   // = 124
-#define PATH_TODO "./data/todos.txt"        // TODO DATA 파일 경로
-#define PATH_TODO_TEMP "./data/todos.tmp"   // 임시 저장용 파일 경로
-
+#define MAX_NAME 90                                     // 한글 기준 최대 30자
+#define MAX_LINE 10 + 2 + 5 + 3 + 3 + 1 + MAX_NAME + 10 // = 124
+#define PATH_TODO "./data/todos.txt"                    // TODO DATA 파일 경로
+#define PATH_TODO_TEMP "./data/todos.tmp"               // 임시 저장용 파일 경로
 
 /* NOTE: todos.txt 형식 예제 (여러 파일로 관리하게 되면 파일 리스트를 가져오는 함수가 환경에 따라 달라져 복잡해져서 우선 하나의 파일에서 전부 동작하도록 단순화해 작업했습니다.)
 id:done:due_year:due_month:due_day:name (':'를 구분자로 인식)
 1:0:2022:12:16:고급C 최종 보고서 제출
 */
-
 
 /****** 구조체 ******/
 // DATE _ 날짜 정보를 표현하는 자료형
@@ -40,35 +37,36 @@ typedef struct _date {
 // TODO _ 투두 요소에 대한 자료형
 typedef struct _todo {
     int id;
-    char done;              // 완료 여부 (0:미완료, 1:완료)
-    char name[MAX_NAME];    // 이름
-    DATE dueDate;           // 마감일
+    char done;           // 완료 여부 (0:미완료, 1:완료)
+    char name[MAX_NAME]; // 이름
+    DATE dueDate;        // 마감일
 
     // DATE assignedDate;      // 지정일
     // char priority;          // 우선 순위 (0~3, 0:미지정, 1:1순위, 2:2순위, 3:3순위) _ 추후 구현
-    
-} TODO;
 
+} TODO;
 
 /****** 폴더 관련 함수 ******/
 // 폴더 생성 함수
 int createDir(char *name) {
-	int result;
-	#if ISWIN == 0
-		result = mkdir(name, 775);
-	#elif ISWIN == 1
-		result = mkdir(name);
-	#endif
-	return result;
+    int result;
+    #if ISWIN == 0
+        result = mkdir(name, 775);
+    #elif ISWIN == 1
+        result = mkdir(name);
+    #endif
+    return result;
 }
-
 
 /****** 데이터 파싱 함수 ******/
 // String(char *) -> DATE
 // "2022-12-01" 형식으로 들어오는 rawString을 '-' 문자를 기준으로 잘라 DATE 구조체에 담아 반환
 DATE parseDate(char *rawString) {
+    char raw[MAX_INPUT];
     char *p = NULL;
     DATE date = {};
+
+    strcpy(raw, rawString);
 
     p = strtok(rawString, "-");
     date.year = atoi(p);
@@ -96,7 +94,7 @@ TODO parseTodo(char *rawString) {
     todo.id = atoi(p);
 
     p = strtok(NULL, ":");
-    todo.done = (char) atoi(p);
+    todo.done = (char)atoi(p);
 
     p = strtok(NULL, ":");
     todo.dueDate.year = atoi(p);
@@ -129,6 +127,20 @@ int parseId(char *rawString) {
     return id;
 }
 
+char *getTodoString(TODO todo, char *dest) {
+    char todoString[MAX_LINE];
+
+    sprintf(todoString, "%d:%d:%d:%d:%d:%s\n",
+            todo.id,
+            todo.done,
+            todo.dueDate.year,
+            todo.dueDate.month,
+            todo.dueDate.day,
+            todo.name);
+
+    strcpy(dest, todoString);
+    return dest;
+}
 
 /****** 필요한 데이터 계산/처리(프로세싱) 함수 ******/
 // 새로 만들 TODO의 id값을 구하는 함수
@@ -143,7 +155,7 @@ int getNewId(char *path) {
     if (fp == NULL)
         return 1;
 
-    while ( fgets(raw_line, MAX_LINE, fp) != NULL ) {
+    while (fgets(raw_line, MAX_LINE, fp) != NULL) {
         newId = parseId(raw_line);
     }
     newId += 1;
@@ -151,7 +163,6 @@ int getNewId(char *path) {
     fclose(fp);
     return newId;
 }
-
 
 /****** TODO 관리 함수들 ******/
 // 새로운 TODO 추가
@@ -168,19 +179,17 @@ TODO writeNewTodo(char *name, DATE due) {
     strcpy(new.name, name);
     new.dueDate = due;
 
-    fprintf(fp, "%d:%d:%d:%d:%d:%s\n", 
-        new.id, 
-        new.done, 
-        new.dueDate.year, 
-        new.dueDate.month,
-        new.dueDate.day,
-        new.name
-    );
+    fprintf(fp, "%d:%d:%d:%d:%d:%s\n",
+            new.id,
+            new.done,
+            new.dueDate.year,
+            new.dueDate.month,
+            new.dueDate.day,
+            new.name);
 
     fclose(fp);
     return new;
 }
-
 
 // 기존 TODO 삭제
 // 고유한 TODO의 id 값을 기준으로 삭제 (파일에서도 실시간 반영)
@@ -192,13 +201,14 @@ void removeTodo(int targetId) {
     FILE *fp = fopen(PATH_TODO, "r");
     FILE *fp_temp = fopen(PATH_TODO_TEMP, "w");
 
-    while (fgets(raw_line, MAX_LINE, fp) != NULL) {
+    while (fgets(raw_line, MAX_LINE, fp) != NULL)
+    {
         currId = parseId(raw_line);
 
         // 삭제 대상의 line은 건너띄고 새로운 파일에 기록
         if (currId == targetId)
             continue;
-        
+
         fputs(raw_line, fp_temp);
     }
 
@@ -208,7 +218,6 @@ void removeTodo(int targetId) {
     remove(PATH_TODO);
     rename(PATH_TODO_TEMP, PATH_TODO);
 }
-
 
 /****** 각 메뉴별 함수 ******/
 // 메뉴 1. TODO 추가
@@ -238,7 +247,6 @@ void menu_newTodo() {
     return;
 }
 
-
 // 메뉴 2. TODO 삭제
 void menu_removeTodo() {
     int id = 0;
@@ -254,18 +262,16 @@ void menu_removeTodo() {
     return;
 }
 
-
 // 메뉴 11. 초기 설정
 // 프로그램이 정상 작동하려면 data 폴더가 존재하여야 하므로, 최초 실행 시 1회 실행 필요
 void menu_initDataDir() {
-	if (createDir(DIRNAME) == 0) {
-		printf("초기 설정 완료\n");
-	}
-	else {
-		printf("초기 설정 실패\n");
-	}
+    if (createDir(DIRNAME) == 0) {
+        printf("초기 설정 완료\n");
+    }
+    else {
+        printf("초기 설정 실패\n");
+    }
 }
-
 
 /****** main ******/
 int main() {
@@ -273,13 +279,13 @@ int main() {
 
     while (1) {
         printf("\n\n");
-	    printf("============\n");
+        printf("============\n");
         printf("0. 종료\n");
         printf("------------\n");
         printf("1. TODO 추가\n");
         printf("2. TODO 삭제\n");
-	    printf("============\n");
-	    printf("11. 초기 설정 (최초 1회 실행 필요)\n");
+        printf("============\n");
+        printf("11. 초기 설정 (최초 1회 실행 필요)\n");
         printf("============\n");
         printf("> ");
         scanf("%d", &cmd);
@@ -292,24 +298,24 @@ int main() {
         }
 
         switch (cmd) {
-            // 1. TODO 추가
-            case 1:
-                menu_newTodo();
-                break;
-            
-            // 2. TODO 삭제
-            case 2:
-                menu_removeTodo();
-                break;
+        // 1. TODO 추가
+        case 1:
+            menu_newTodo();
+            break;
 
-	        // 11. 초기 설정
-	        case 11:
-		        menu_initDataDir();
-		break;
-            
-            default:
-                printf("존재하지 않는 메뉴입니다.\n");
-                break;
+        // 2. TODO 삭제
+        case 2:
+            menu_removeTodo();
+            break;
+
+        // 11. 초기 설정
+        case 11:
+            menu_initDataDir();
+            break;
+
+        default:
+            printf("존재하지 않는 메뉴입니다.\n");
+            break;
         }
     }
 
