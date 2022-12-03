@@ -12,13 +12,11 @@
     #include <direct.h>
 #endif
 
-#define DIRNAME "./data"
-
 #define MAX_INPUT 1000
 #define MAX_NAME 90                                     // 한글 기준 최대 30자
 #define MAX_LINE 10 + 2 + 5 + 3 + 3 + 1 + MAX_NAME + 10 // = 124
-#define PATH_TODO "./data/todos.txt"                    // TODO DATA 파일 경로
-#define PATH_TODO_TEMP "./data/todos.tmp"               // 임시 저장용 파일 경로
+#define PATH_TODO "./todos.txt"                         // TODO DATA 파일 경로
+#define PATH_TODO_TEMP "./todos.tmp"                    // 임시 저장용 파일 경로
 
 /* NOTE: todos.txt 형식 예제 (여러 파일로 관리하게 되면 파일 리스트를 가져오는 함수가 환경에 따라 달라져 복잡해져서 우선 하나의 파일에서 전부 동작하도록 단순화해 작업했습니다.)
 id:done:due_year:due_month:due_day:name (':'를 구분자로 인식)
@@ -469,8 +467,8 @@ int main() {
         printf("3. TODO 수정\n");
         printf("4. TODO 보기\n");
         printf("5. TODO 완료 토글\n");
-        printf("============\n");
-        printf("11. 초기 설정 (최초 1회 실행 필요)\n");
+        // printf("============\n");
+        // printf("11. 초기 설정 (최초 1회 실행 필요)\n");
         printf("============\n");
         printf("> ");
         scanf("%d", &cmd);
@@ -510,10 +508,10 @@ int main() {
             menu_doneTodo();
             break;
 
-        // 11. 초기 설정
-        case 11:
-            menu_initDataDir();
-            break;
+        // 11. 초기 설정 (사용x)
+        // case 11:
+        //     menu_initDataDir();
+        //     break;
 
         default:
             printf("존재하지 않는 메뉴입니다.\n");
