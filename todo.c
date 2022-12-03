@@ -457,7 +457,6 @@ int main() {
     int cmd = 0;
 
     while (1) {
-        clear();
         printf("\n\n");
         printf("============\n");
         printf("0. 종료\n");
