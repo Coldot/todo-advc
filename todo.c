@@ -289,12 +289,12 @@ void showTodo()
         return;
     } 
 
-    printf("완료 \t id \t 마감일 \t 할일\n");
+    printf("완료 \t id \t 마감일 \t\t 할일\n");
     while (fgets(raw_line, MAX_LINE, fp) != NULL) {   
         raw_line[strlen(raw_line) - 1] = '\0';
 
         TODO todo = parseTodo(raw_line);
-        printf("[%s] \t %d \t %04d-%02d-%02d \t %s\n", 
+        printf("[%s] \t %d \t\t %04d-%02d-%02d \t %s\n", 
             todo.done ? "✓" : " ", 
             todo.id,
             todo.dueDate.year, todo.dueDate.month, todo.dueDate.day,
