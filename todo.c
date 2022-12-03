@@ -157,12 +157,35 @@ int getNewId(char *path) {
         return 1;
 
     while (fgets(raw_line, MAX_LINE, fp) != NULL) {
+        raw_line[strlen(raw_line) - 1] = '\0';
+
         newId = parseId(raw_line);
     }
     newId += 1;
 
     fclose(fp);
     return newId;
+}
+
+// 파일의 총 열을 구하는 함수
+int getRow(char *path) {
+    char raw_line[MAX_LINE];
+    int row = 0;
+
+    FILE *fp = fopen(path, "r");
+
+    if (fp == NULL)
+        return 0;
+    
+    while (fgets(raw_line, MAX_LINE, fp) != NULL) {
+        raw_line[strlen(raw_line) - 1] = '\0';
+
+        if (strlen(raw_line) != 0)
+            row++;
+    }
+
+    fclose(fp);
+    return row;
 }
 
 /****** TODO 관리 함수들 ******/
@@ -203,6 +226,8 @@ void removeTodo(int targetId) {
     FILE *fp_temp = fopen(PATH_TODO_TEMP, "w");
 
     while (fgets(raw_line, MAX_LINE, fp) != NULL) {
+        // 삭제할 때에는 문자열의 끝에 개행문자를 남겨둠
+
         currId = parseId(raw_line);
 
         // 삭제 대상의 line은 건너띄고 새로운 파일에 기록
@@ -220,13 +245,74 @@ void removeTodo(int targetId) {
 }
 
 // 기존 TODO 이름 변경
-void renameTodo(int targetId) {
-    printf("수정 할 문장을 입력해주세요 : ");
+void renameTodo(int targetId) {  
     char raw_line[MAX_LINE];
     int currId;
     char sen[MAX_NAME] = "";
-    scanf("%s", sen);
-    printf("\n");
+
+    FILE *fp = fopen(PATH_TODO, "r");
+    FILE *fp_temp = fopen(PATH_TODO_TEMP, "w");
+
+    while (fgets(raw_line, MAX_LINE, fp) != NULL) {
+        // 이름 변경시에는 개행 문자 남겨둬도 무관
+
+        currId = parseId(raw_line);
+        TODO todo = parseTodo(raw_line);
+
+        // 삭제 대상의 line은 건너띄고 새로운 파일에 기록
+        if (currId == targetId) {
+            printf("수정 할 문장을 입력해주세요 : ");
+            scanf("%[^\n]s", sen);
+            getchar();
+            strcpy(todo.name, sen);
+            getTodoString(todo, raw_line);
+        }
+
+        fputs(raw_line, fp_temp);
+    }
+
+    fclose(fp);
+    fclose(fp_temp);
+
+    remove(PATH_TODO);
+    rename(PATH_TODO_TEMP, PATH_TODO);
+}
+
+// TODO 보여주기
+void showTodo()
+{
+    int numOfRows = getRow(PATH_TODO);
+    char raw_line[MAX_LINE];
+
+    FILE* fp = fopen(PATH_TODO, "r");
+
+    if (fp == NULL || numOfRows == 0) {
+        printf("TODO가 존재하지 않습니다.");
+        return;
+    } 
+
+    printf("완료 \t id \t 마감일 \t 할일\n");
+    while (fgets(raw_line, MAX_LINE, fp) != NULL) {   
+        raw_line[strlen(raw_line) - 1] = '\0';
+
+        TODO todo = parseTodo(raw_line);
+        printf("[%s] \t %d \t %04d-%02d-%02d \t %s\n", 
+            todo.done ? "✓" : " ", 
+            todo.id,
+            todo.dueDate.year, todo.dueDate.month, todo.dueDate.day,
+            todo.name);
+    }
+    printf("==================================\n");
+
+    fclose(fp);
+    return;
+
+}
+
+// TODO 완료 체크하기
+void toggleTodo(int targetId) {
+    char raw_line[MAX_LINE];
+    int currId;
 
     FILE *fp = fopen(PATH_TODO, "r");
     FILE *fp_temp = fopen(PATH_TODO_TEMP, "w");
@@ -235,12 +321,30 @@ void renameTodo(int targetId) {
         currId = parseId(raw_line);
         TODO todo = parseTodo(raw_line);
 
-        // 삭제 대상의 line은 건너띄고 새로운 파일에 기록
         if (currId == targetId) {
-            printf("TODO 이름: ");
-            scanf("%[^\n]s", sen);
-            getchar();
-            strcpy(todo.name, sen);
+            // 개행 문자가 제거된 raw_line이 필요한 경우에만 사용
+            raw_line[strlen(raw_line) - 1] = '\0';
+
+            if ( !todo.done ) {
+                todo.done = 1;
+                printf("완료 처리하였습니다.\n");
+            }
+            else {
+                char input[10];
+                printf("이미 완료 처리된 Todo 입니다. 체크를 해제할까요? [y/n]: ");
+                scanf("%s", input);
+                getchar();
+
+                if (strcmp(input, "y") == 0) {
+                    todo.done = 0;
+                    printf("체크를 해제하였습니다.\n");
+                } else if (strcmp(input, "n") == 0) {
+                    printf("체크를 해제하지 않습니다.\n");
+                } else {
+                    printf("알 수 없는 답변입니다. 체크를 해제하지 않습니다.\n");
+                }
+            }
+            
             getTodoString(todo, raw_line);
         }
 
@@ -272,7 +376,6 @@ void menu_newTodo() {
     printf("마감일(예: 1970-01-01): ");
     scanf("%s", input);
     getchar();
-    printf("%s, %d\n", input, input[10]);
     todo.dueDate = parseDate(input);
 
     todo = writeNewTodo(todo.name, todo.dueDate);
@@ -290,6 +393,8 @@ void menu_removeTodo() {
     printf("=== 2. TODO 삭제 ===\n");
     printf("삭제할 TODO ID: ");
     scanf("%d", &id);
+    getchar();
+
     removeTodo(id);
     printf("삭제를 완료하였습니다.\n");
     printf("===================\n");
@@ -303,8 +408,30 @@ void menu_renameTodo() {
 
     printf("수정할 todo의 id를 입력하세요: ");
     scanf("%d", &targetId);
+    getchar();
 
     renameTodo(targetId);
+}
+
+// 메뉴 4. TODO 보여주기
+void menu_showTodo() {
+	showTodo();
+	
+} 
+
+// 메뉴 5. TODO 완료 체크
+void menu_doneTodo() {
+    int id = 0;
+
+    printf("\n");
+    printf("=== 5. TODO 완료 체크 ===\n");
+    printf("완료할 TODO ID: ");
+    scanf("%d", &id);
+    getchar();
+    toggleTodo(id);
+    printf("===================\n");
+
+    return;
 }
 
 // 메뉴 11. 초기 설정
@@ -330,6 +457,8 @@ int main() {
         printf("1. TODO 추가\n");
         printf("2. TODO 삭제\n");
         printf("3. TODO 수정\n");
+        printf("4. TODO 보기\n");
+        printf("5. TODO 완료 토글\n");
         printf("============\n");
         printf("11. 초기 설정 (최초 1회 실행 필요)\n");
         printf("============\n");
@@ -357,6 +486,16 @@ int main() {
         // 3. TODO 수정
         case 3:
             menu_renameTodo();
+            break;
+        
+        // 4. TODO 보기
+        case 4:
+            menu_showTodo();
+            break;
+        
+        // 5. TODO 체크
+        case 5:
+            menu_doneTodo();
             break;
 
         // 11. 초기 설정
