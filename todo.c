@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define ISWIN 1
+#define ISWIN 0                 // 운영체제에 맞게 설정 (윈도우면 0을 1로 변경)
 #if ISWIN == 0
     #include <sys/stat.h>
 #elif ISWIN == 1
@@ -433,14 +433,14 @@ void menu_doneTodo() {
 
 // 메뉴 11. 초기 설정
 // 프로그램이 정상 작동하려면 data 폴더가 존재하여야 하므로, 최초 실행 시 1회 실행 필요
-void menu_initDataDir() {
-    if (createDir(DIRNAME) == 0) {
-        printf("초기 설정 완료\n");
-    }
-    else {
-        printf("초기 설정 실패\n");
-    }
-}
+// void menu_initDataDir() {
+//     if (createDir(DIRNAME) == 0) {
+//         printf("초기 설정 완료\n");
+//     }
+//     else {
+//         printf("초기 설정 실패\n");
+//     }
+// }
 
 /****** 화면 초기화 함수 ******/
 void clear() {
