@@ -320,11 +320,10 @@ void toggleTodo(int targetId) {
     while (fgets(raw_line, MAX_LINE, fp) != NULL) {
         currId = parseId(raw_line);
         TODO todo = parseTodo(raw_line);
+        todo.name[strlen(todo.name) - 1] = "\0";
 
         if (currId == targetId) {
-            // 개행 문자가 제거된 raw_line이 필요한 경우에만 사용
-            raw_line[strlen(raw_line) - 1] = '\0';
-
+            
             if ( !todo.done ) {
                 todo.done = 1;
                 printf("완료 처리하였습니다.\n");
@@ -344,7 +343,7 @@ void toggleTodo(int targetId) {
                     printf("알 수 없는 답변입니다. 체크를 해제하지 않습니다.\n");
                 }
             }
-            
+
             getTodoString(todo, raw_line);
         }
 
@@ -445,11 +444,22 @@ void menu_initDataDir() {
     }
 }
 
+/****** 화면 초기화 함수 ******/
+void clear() {
+    #if ISWIN == 0
+    system("clear");
+    #elif ISWIN == 1
+    system("cls");
+    #endif
+}
+
+
 /****** main ******/
 int main() {
     int cmd = 0;
 
     while (1) {
+        clear();
         printf("\n\n");
         printf("============\n");
         printf("0. 종료\n");
@@ -471,6 +481,8 @@ int main() {
             printf("프로그램을 종료합니다.\n");
             break;
         }
+
+        clear();
 
         switch (cmd) {
         // 1. TODO 추가
