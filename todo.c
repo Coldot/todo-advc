@@ -46,20 +46,20 @@ typedef struct _todo {
 
 /****** 폴더 관련 함수 ******/
 // 폴더 생성 함수
-int createDir(char *name) {
-    int result;
-    #if ISWIN == 0
-        result = mkdir(name, 775);
-    #elif ISWIN == 1
-        result = mkdir(name);
-    #endif
-    return result;
-}
+// int createDir(char *name) {
+//     int result;
+//     #if ISWIN == 0
+//         result = mkdir(name, 775);
+//     #elif ISWIN == 1
+//         result = mkdir(name);
+//     #endif
+//     return result;
+// }
 
 /****** 데이터 파싱 함수 ******/
 // String(char *) -> DATE
 // "2022-12-01" 형식으로 들어오는 rawString을 '-' 문자를 기준으로 잘라 DATE 구조체에 담아 반환
-DATE parseDate(char *rawString) {
+DATE strToDate(char *rawString) {
     char raw[MAX_INPUT];
     char *p = NULL;
     DATE date = {};
@@ -81,7 +81,7 @@ DATE parseDate(char *rawString) {
 
 // String(char *) -> TODO
 // "1:0:2022:12:16:고급C 최종 보고서 제출" 형식으로 들어오는 rawString을 ':' 문자를 기준으로 잘라 TODO 구조체에 담아 변환
-TODO parseTodo(char *rawString) {
+TODO strToTodo(char *rawString) {
     char raw[MAX_LINE];
     char *p = NULL;
     TODO todo = {};
@@ -126,7 +126,7 @@ int parseId(char *rawString) {
 }
 
 // TODO -> String(char *)
-char *getTodoString(TODO todo, char *dest) {
+char *todoToStr(TODO todo, char *dest) {
     char todoString[MAX_LINE];
 
     sprintf(todoString, "%d:%d:%d:%d:%d:%s\n",
@@ -208,6 +208,10 @@ TODO writeNewTodo(char *name, DATE due) {
             new.dueDate.month,
             new.dueDate.day,
             new.name);
+    // 동일코드 (추천)
+    // char raw_line[MAX_LINE];
+    // todoToStr(new, raw_line);
+    // fputs(raw_line, fp);
 
     fclose(fp);
     return new;
@@ -255,7 +259,7 @@ void renameTodo(int targetId) {
         // 이름 변경시에는 개행 문자 남겨둬도 무관
 
         currId = parseId(raw_line);
-        TODO todo = parseTodo(raw_line);
+        TODO todo = strToTodo(raw_line);
 
         // 삭제 대상의 line은 건너띄고 새로운 파일에 기록
         if (currId == targetId) {
@@ -263,7 +267,7 @@ void renameTodo(int targetId) {
             scanf("%[^\n]s", sen);
             getchar();
             strcpy(todo.name, sen);
-            getTodoString(todo, raw_line);
+            todoToStr(todo, raw_line);
         }
 
         fputs(raw_line, fp_temp);
@@ -293,7 +297,7 @@ void showTodo()
     while (fgets(raw_line, MAX_LINE, fp) != NULL) {   
         raw_line[strlen(raw_line) - 1] = '\0';
 
-        TODO todo = parseTodo(raw_line);
+        TODO todo = strToTodo(raw_line);
         printf("[%s] \t %d \t\t %04d-%02d-%02d \t %s\n", 
             todo.done ? "✓" : " ", 
             todo.id,
@@ -317,7 +321,7 @@ void toggleTodo(int targetId) {
 
     while (fgets(raw_line, MAX_LINE, fp) != NULL) {
         currId = parseId(raw_line);
-        TODO todo = parseTodo(raw_line);
+        TODO todo = strToTodo(raw_line);
         todo.name[strlen(todo.name) - 1] = '\0';
 
         if (currId == targetId) {
@@ -342,7 +346,7 @@ void toggleTodo(int targetId) {
                 }
             }
 
-            getTodoString(todo, raw_line);
+            todoToStr(todo, raw_line);
         }
 
         fputs(raw_line, fp_temp);
@@ -373,7 +377,7 @@ void menu_newTodo() {
     printf("마감일(예: 1970-01-01): ");
     scanf("%s", input);
     getchar();
-    todo.dueDate = parseDate(input);
+    todo.dueDate = strToDate(input);
 
     todo = writeNewTodo(todo.name, todo.dueDate);
     printf("저장을 완료하였습니다. (id: %d)\n", todo.id);
