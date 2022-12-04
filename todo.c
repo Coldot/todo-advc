@@ -318,7 +318,7 @@ void toggleTodo(int targetId) {
     while (fgets(raw_line, MAX_LINE, fp) != NULL) {
         currId = parseId(raw_line);
         TODO todo = parseTodo(raw_line);
-        todo.name[strlen(todo.name) - 1] = "\0";
+        todo.name[strlen(todo.name) - 1] = '\0';
 
         if (currId == targetId) {
             
